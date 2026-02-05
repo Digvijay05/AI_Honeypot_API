@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+.conda/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Local data
+*.db
+*.sqlite
+*.sqlite3
+honeypot.db
+logs/
+*.log
+
+# Documentation (not needed in container)
+docs/
+*.md
+!requirements.txt
+
+# Tests (not needed in production container)
+tests/
+.pytest_cache/
+
+# Git
+.git/
+.gitignore
+
+# Environment files (secrets - never copy to image)
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+*.bak
+*.tmp
+.cache/
+tmp/

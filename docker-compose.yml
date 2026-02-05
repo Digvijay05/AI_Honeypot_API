@@ -1,0 +1,101 @@
+# ==============================================================================
+# Docker Compose for Honeypot API
+# ==============================================================================
+# Services:
+# - honeypot-backend: FastAPI application
+# - redis: Session storage
+#
+# Usage:
+#   docker compose up --build     # Build and start
+#   docker compose up -d          # Start in background
+#   docker compose logs -f        # View logs
+#   docker compose down           # Stop and remove
+# ==============================================================================
+
+services:
+  honeypot-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: honeypot-api
+    ports:
+      - "8000:8000"
+    environment:
+      # Required secrets (from .env file)
+      - HONEYPOT_API_KEY=${HONEYPOT_API_KEY}
+      # Ollama Cloud Configuration (Primary LLM Provider)
+      - OLLAMA_API_KEY=${OLLAMA_API_KEY}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-gemma3:27b-cloud}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-https://ollama.com}
+      # Groq Configuration (Optional - for fallback)
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+      # OpenAI Configuration (Optional - for fallback)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      # Redis connection (internal Docker network)
+      - REDIS_URL=redis://redis:6379/0
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_FORMAT=${LOG_FORMAT:-json}
+      # Session config
+      - MAX_SESSION_MESSAGES=${MAX_SESSION_MESSAGES:-20}
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    # Resource limits (prevent runaway containers)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    networks:
+      - honeypot-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: honeypot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    # Redis resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 32M
+    networks:
+      - honeypot-net
+    command: redis-server --appendonly yes --maxmemory 100mb --maxmemory-policy allkeys-lru
+
+networks:
+  honeypot-net:
+    driver: bridge
+
+volumes:
+  redis_data:

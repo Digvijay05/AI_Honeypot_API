@@ -1,0 +1,38 @@
+# ==============================================================================
+# ngrok Configuration Example
+# ==============================================================================
+# Copy to ngrok.yml (or ~/.ngrok2/ngrok.yml) and configure.
+# Docs: https://ngrok.com/docs/agent/config/
+# ==============================================================================
+
+version: "2"
+
+# Your ngrok authtoken (required for custom domains and longer sessions)
+# Get from: https://dashboard.ngrok.com/get-started/your-authtoken
+authtoken: YOUR_AUTHTOKEN_HERE
+
+# Region for tunnel server (us, eu, ap, au, sa, jp, in)
+# Choose closest for lowest latency
+region: in
+
+# Tunnel definitions
+tunnels:
+  honeypot:
+    # Protocol: http for web traffic
+    proto: http
+    # Local address to forward to
+    addr: 8000
+    # Optional: If you have a free static domain from ngrok
+    # Get one from: https://dashboard.ngrok.com/cloud-edge/domains
+    # domain: your-static-domain.ngrok-free.app
+    
+    # Inspect traffic in ngrok web interface (http://127.0.0.1:4040)
+    inspect: true
+
+# Web interface settings
+web_addr: 127.0.0.1:4040
+
+# Logging
+log_level: info
+log_format: term
+log: stdout
